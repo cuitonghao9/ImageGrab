@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, Check, CheckCheck, Download, ImagePlus, LoaderCircle, RotateCcw, Square, StopCircle, X } from 'lucide-react';
+import { AlertCircle, Archive, Check, CheckCheck, Download, ImagePlus, LoaderCircle, RotateCcw, Square, StopCircle, X } from 'lucide-react';
 import type { ExtractedImage, GalleryTask } from '../shared/types';
-import { fetchPng, imageFileName } from '../utils/image';
+import { createImageArchive } from '../utils/archive';
+import { fetchPng, imageFileName, safeFileName } from '../utils/image';
 
-type DownloadState = { done: number; total: number; failed: number; running: boolean; stopped: boolean };
+type DownloadState = { done: number; total: number; failed: number; running: boolean; stopped: boolean; mode: 'images' | 'zip' };
 const extensionRuntime = typeof chrome !== 'undefined' && Boolean(chrome.runtime?.id);
 
 function previewTask(): GalleryTask {
@@ -34,7 +35,7 @@ export default function Gallery() {
   const [task, setTask] = useState<GalleryTask>();
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [download, setDownload] = useState<DownloadState>({ done: 0, total: 0, failed: 0, running: false, stopped: false });
+  const [download, setDownload] = useState<DownloadState>({ done: 0, total: 0, failed: 0, running: false, stopped: false, mode: 'images' });
   const [failedImages, setFailedImages] = useState<Map<string, string>>(new Map());
   const [preview, setPreview] = useState<ExtractedImage>();
   const stopRequested = useRef(false);
@@ -64,7 +65,7 @@ export default function Gallery() {
   const downloadImages = useCallback(async (images: ExtractedImage[]) => {
     if (!extensionRuntime || !task || download.running || images.length === 0) return;
     stopRequested.current = false;
-    setDownload({ done: 0, total: images.length, failed: 0, running: true, stopped: false });
+    setDownload({ done: 0, total: images.length, failed: 0, running: true, stopped: false, mode: 'images' });
     setFailedImages(new Map());
     let done = 0;
     let failed = 0;
@@ -95,6 +96,54 @@ export default function Gallery() {
     setDownload((current) => ({ ...current, running: false, stopped: stopRequested.current, done, failed }));
   }, [download.running, task]);
 
+  const downloadArchive = useCallback(async (images: ExtractedImage[]) => {
+    if (!extensionRuntime || !task || download.running || images.length === 0) return;
+    stopRequested.current = false;
+    setDownload({ done: 0, total: images.length, failed: 0, running: true, stopped: false, mode: 'zip' });
+    setFailedImages(new Map());
+    const converted: Array<{ name: string; png: Blob }> = [];
+    let failed = 0;
+    let cursor = 0;
+    const worker = async () => {
+      while (!stopRequested.current) {
+        const index = cursor++;
+        if (index >= images.length) return;
+        const image = images[index];
+        try {
+          const png = await fetchPng(image.url);
+          converted.push({ name: imageFileName(task.platform, task.images.findIndex((entry) => entry.id === image.id) + 1), png });
+        } catch (reason) {
+          failed++;
+          setFailedImages((current) => new Map(current).set(image.id, reason instanceof Error ? reason.message : '图片转换失败'));
+        }
+        setDownload((current) => ({ ...current, done: converted.length, failed }));
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(3, images.length) }, () => worker()));
+
+    try {
+      if (converted.length > 0) {
+        const bytes = await createImageArchive(converted);
+        const objectUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }));
+        try {
+          await chrome.downloads.download({
+            url: objectUrl,
+            filename: `${safeFileName(task.platform)}_商品图片.zip`,
+            saveAs: false,
+            conflictAction: 'uniquify',
+          });
+        } finally {
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+        }
+      }
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : '压缩包生成或下载失败';
+      setFailedImages(new Map(images.map((image) => [image.id, message])));
+      failed = images.length;
+    }
+    setDownload((current) => ({ ...current, running: false, stopped: stopRequested.current, done: failed === images.length ? 0 : converted.length, failed }));
+  }, [download.running, task]);
+
   const stopDownloads = () => {
     // 正在处理的图片会完成，停止标志阻止 worker 领取后续图片。
     stopRequested.current = true;
@@ -103,7 +152,8 @@ export default function Gallery() {
 
   const retryFailed = () => {
     const failed = task?.images.filter((image) => failedImages.has(image.id)) ?? [];
-    void downloadImages(failed);
+    if (download.mode === 'zip') void downloadArchive(failed);
+    else void downloadImages(failed);
   };
 
   if (error) return <main className="page"><div className="message"><AlertCircle size={24} /><h1>无法显示图片</h1><p>{error}</p></div></main>;
@@ -118,12 +168,13 @@ export default function Gallery() {
         <button className="quiet" onClick={() => setSelected((current) => new Set(task.images.filter((image) => !current.has(image.id)).map((image) => image.id)))}><RotateCcw size={16} />反选</button>
         {extensionRuntime && <button className="quiet" onClick={() => void chrome.tabs.create({ url: task.pageUrl })}><ImagePlus size={16} />打开商品页</button>}
         <button className="primary" disabled={!extensionRuntime || download.running || selectedImages.length === 0} onClick={() => void downloadImages(selectedImages)}><Download size={16} />{extensionRuntime ? `下载选中 (${selectedImages.length})` : '扩展中可下载'}</button>
+        {task.images.length > 1 && <button className="primary" disabled={!extensionRuntime || download.running} onClick={() => void downloadArchive(task.images)}><Archive size={16} />{extensionRuntime ? '全部打包下载' : '扩展中可打包'}</button>}
       </div>
     </header>
 
     {task.images.length === 0 ? <section className="empty"><ImagePlus size={32} /><h2>没有发现商品图片</h2><p>请确认当前页面已经加载商品图片，或返回商品页再次获取。</p><a href={task.pageUrl} target="_blank" rel="noreferrer">打开商品页面</a></section> : <>
       {download.total > 0 && <section className="download-status" aria-live="polite">
-        <div className="status-copy"><strong>{download.running ? '正在转换并下载' : '下载任务'}</strong><span>{download.done}/{download.total} 完成 · {download.failed} 失败</span></div>
+        <div className="status-copy"><strong>{download.running ? (download.mode === 'zip' ? '正在转换并打包' : '正在转换并下载') : (download.mode === 'zip' ? '压缩包任务' : '下载任务')}</strong><span>{download.done}/{download.total} 完成 · {download.failed} 失败</span></div>
         <progress max={download.total} value={download.done + download.failed} />
         <div className="status-actions">{download.running && <button className="icon-button" title="停止后续下载" aria-label="停止后续下载" onClick={stopDownloads}><StopCircle size={17} /></button>}{!download.running && download.failed > 0 && <button className="quiet" onClick={retryFailed}>重试失败项</button>}</div>
       </section>}

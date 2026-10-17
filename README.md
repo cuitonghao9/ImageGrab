@@ -27,7 +27,7 @@ pnpm build
 
 ## 使用和测试
 
-打开支持的商品详情页，点击页面右下角“获取图片”，在新打开的图库中全选、反选或勾选图片，再点击“下载选中”。支持 `item.taobao.com`、天猫商品页、`item.jd.com` 以及拼多多商家版 `mms.pinduoduo.com` 商品相关页面。测试也可在 `pnpm test` 执行的 jsdom 环境中验证平台域名适配和提取逻辑。`pnpm dev` 用于图库界面调试；Chrome 扩展完整流程请先执行 `pnpm build` 并加载 `dist`。
+打开支持的商品详情页，点击页面右下角“获取图片”，在新打开的图库中全选、反选或勾选图片，再点击“下载选中”。当提取结果超过 1 张时，也可以点击“全部打包下载”，将全部发现的图片转为 PNG 后打入一个 ZIP；此操作不受当前勾选状态影响。支持 `item.taobao.com`、天猫商品页、`item.jd.com` 以及拼多多商家版 `mms.pinduoduo.com` 商品相关页面。测试也可在 `pnpm test` 执行的 jsdom 环境中验证平台域名适配和提取逻辑。`pnpm dev` 用于图库界面调试；Chrome 扩展完整流程请先执行 `pnpm build` 并加载 `dist`。
 
 ## 权限
 
