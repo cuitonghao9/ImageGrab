@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="图提取 ImageGrab：为电商工作流打造的 Chrome 图片提取工具，一键收集商品图片，集中预览、自由勾选，统一为 PNG 批量下载。">
+  <meta name="theme-color" content="#6254e8">
+  <title>图提取 ImageGrab — 好图片，一键收入囊中</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+
+  <!-- 本地图标库：所有图形均为内联 SVG，无外部资源 -->
+  <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <symbol id="i-logo" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/><rect x="7" y="7" width="10" height="10" rx="2"/><path d="m8 15 3-3 2 2 2-2 2 2"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3ZM20 2v4m-2-2h4"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 4h18l-7 8v7l-4 2v-9L3 4Z"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-select" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m7 12 3 3 7-7"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Zm0 0v6h6M8 15h8m-8 3h5"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4-5 8-8 9-3-1-8-5-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+      <symbol id="i-chrome" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="4"/><path d="M12 8h8.5M8.5 14 4.2 6.5M14 15.5 9.8 21"/></symbol>
+      <symbol id="p-bottle" viewBox="0 0 160 160"><ellipse cx="82" cy="143" rx="43" ry="6" fill="#233b2c" opacity=".1"/><rect x="61" y="20" width="38" height="22" rx="5" fill="#3b493f"/><rect x="65" y="25" width="30" height="2" rx="1" fill="#6a786d"/><path d="M62 40h36l12 22v66a11 11 0 0 1-11 11H61a11 11 0 0 1-11-11V62Z" fill="#758c67"/><path d="M62 43h9L60 65v61a8 8 0 0 0 7 8H60a6 6 0 0 1-6-6V64Z" fill="#acc19c" opacity=".7"/><rect x="54" y="76" width="52" height="42" rx="1" fill="#f4f1df"/><text x="80" y="91" text-anchor="middle" fill="#415139" font-size="7" font-family="sans-serif" letter-spacing="2">BOTANIC</text><path d="M80 110V97m0 7c-9 0-9-7-9-7s9 0 9 7Zm0 3c9 0 9-7 9-7s-9 0-9 7Z" fill="#7e936c"/></symbol>
+      <symbol id="p-shoe" viewBox="0 0 160 160"><ellipse cx="80" cy="132" rx="63" ry="6" fill="#573b2b" opacity=".1"/><path d="m24 83 9-31 17 6 11 23 37 12 29 5q14 3 14 17H20q-6-23 4-32Z" fill="#e8d8c5"/><path d="m32 65 15 6 8 22 41 13 32 2 9 8H23Z" fill="#f9f4eb"/><path d="m57 82 25 22-28-9-13-23" fill="#a88970"/><path d="m62 86 10-8m0 12 10-8m0 11 9-7" stroke="#fffdf7" stroke-width="4"/><path d="M18 113h124v9q-3 5-15 5H26q-9 0-8-14Z" fill="#fffdf7"/><path d="M24 121h111" stroke="#cebaa6" stroke-width="2"/></symbol>
+      <symbol id="p-headphones" viewBox="0 0 160 160"><ellipse cx="80" cy="140" rx="47" ry="6" fill="#252537" opacity=".1"/><path d="M39 89V66a41 41 0 0 1 82 0v23" fill="none" stroke="#393b48" stroke-width="15"/><path d="M40 69a40 40 0 0 1 80 0" fill="none" stroke="#747684" stroke-width="5"/><rect x="25" y="77" width="30" height="53" rx="13" fill="#515361"/><rect x="27" y="83" width="12" height="39" rx="6" fill="#7c7d89"/><rect x="105" y="77" width="30" height="53" rx="13" fill="#515361"/><rect x="119" y="83" width="12" height="39" rx="6" fill="#7c7d89"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- 顶部导航：无 JS 时保持链接可用 -->
+  <header class="site-header" id="top">
+    <nav class="nav container" aria-label="主导航">
+      <a class="brand" href="#top" aria-label="图提取 ImageGrab 首页"><span class="brand-mark"><svg class="icon"><use href="#i-logo"/></svg></span><span>图提取 <span class="brand-en">ImageGrab</span></span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="展开导航菜单"><span></span><span></span><span></span></button>
+      <div class="nav-links" id="nav-links">
+        <a href="#about">产品介绍</a><a href="#features">核心功能</a><a href="#install">安装步骤</a>
+        <a class="button button-small" href="#download">下载插件 <svg class="icon"><use href="#i-arrow"/></svg></a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- 首屏：左侧价值说明，右侧可操作的图片选择演示 -->
+    <section class="hero section" aria-labelledby="hero-title">
+      <div class="container hero-layout">
+        <div class="hero-copy" data-reveal>
+          <span class="eyebrow hero-badge"><span class="status-dot"></span> 为电商效率而生的 Chrome 插件</span>
+          <h1 id="hero-title">好图片，<br><span class="gradient-text">一键收入囊中。</span></h1>
+          <p class="hero-lead">一键提取电商详情页所有图片，<br class="desktop-break">批量下载为 PNG。把时间留给更有价值的创作。</p>
+          <div class="hero-actions"><a class="button" href="#download"><svg class="icon"><use href="#i-chrome"/></svg>立即安装<svg class="icon"><use href="#i-arrow"/></svg></a><a class="text-button" href="#features">查看功能 <span aria-hidden="true">↗</span></a></div>
+          <p class="hero-note"><svg class="icon"><use href="#i-shield"/></svg>本地处理 <span>·</span> 无需注册 <span>·</span> 轻量便捷</p>
+          <div class="platforms"><span class="platform-label">适配你的常用平台</span><div><span class="platform taobao">淘<span>淘宝</span></span><span class="platform jd">JD<span>京东</span></span><span class="platform pdd">拼<span>拼多多商家版</span></span></div></div>
+        </div>
+
+        <div class="hero-visual" data-reveal>
+          <div class="floating-label"><span class="label-icon"><svg class="icon"><use href="#i-spark"/></svg></span><span>灵感收集，从此轻松一点<span class="label-caption">LESS CLICKING, MORE CREATING</span></span></div>
+          <div class="browser-mockup" role="group" aria-label="插件图库交互演示">
+            <div class="browser-bar"><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div><span class="browser-address"><svg class="icon"><use href="#i-shield"/></svg> ImageGrab / 图片工作台</span><span class="browser-plus" aria-hidden="true">＋</span></div>
+            <div class="gallery">
+              <div class="gallery-heading"><div><span class="mini-label">YOUR IMAGE COLLECTION</span><h2>把好图，收在一起<span class="count-badge">06</span></h2></div><span class="gallery-logo"><svg class="icon"><use href="#i-logo"/></svg></span></div>
+              <div class="gallery-toolbar"><span><span class="status-dot"></span> 已发现 6 张商品图片</span><button type="button" class="select-all" id="select-all">全选</button></div>
+              <div class="product-grid">
+                <label class="product-card sage"><input class="demo-image" type="checkbox" checked aria-label="选择植物精华正面图"><svg class="product-art" aria-hidden="true"><use href="#p-bottle"/></svg><span class="product-meta">800 × 800 <span>PNG</span></span></label>
+                <label class="product-card sand"><input class="demo-image" type="checkbox" checked aria-label="选择运动鞋侧面图"><svg class="product-art" aria-hidden="true"><use href="#p-shoe"/></svg><span class="product-meta">1200 × 1200 <span>PNG</span></span></label>
+                <label class="product-card lilac"><input class="demo-image" type="checkbox" checked aria-label="选择耳机正面图"><svg class="product-art" aria-hidden="true"><use href="#p-headphones"/></svg><span class="product-meta">800 × 800 <span>PNG</span></span></label>
+                <label class="product-card sand"><input class="demo-image" type="checkbox" checked aria-label="选择运动鞋细节图"><svg class="product-art art-detail" aria-hidden="true"><use href="#p-shoe"/></svg><span class="product-meta">1200 × 1200 <span>PNG</span></span></label>
+                <label class="product-card lilac"><input class="demo-image" type="checkbox" aria-label="选择耳机细节图"><svg class="product-art art-detail" aria-hidden="true"><use href="#p-headphones"/></svg><span class="product-meta">800 × 800 <span>PNG</span></span></label>
+                <label class="product-card sage"><input class="demo-image" type="checkbox" aria-label="选择植物精华细节图"><svg class="product-art art-detail" aria-hidden="true"><use href="#p-bottle"/></svg><span class="product-meta">800 × 800 <span>PNG</span></span></label>
+              </div>
+              <div class="gallery-bottom"><span id="selection-count" aria-live="polite">已选择 <strong>4</strong> 张图片</span><a class="button button-small" href="#download"><svg class="icon"><use href="#i-download"/></svg>批量下载 <span id="download-count">(4)</span></a></div>
+            </div>
+          </div>
+          <div class="success-label"><span class="success-check"><svg class="icon"><use href="#i-check"/></svg></span><div>告别一张张右键保存<span>提取 · 筛选 · 下载，一气呵成</span></div><span class="png-stamp">.PNG</span></div>
+          <p class="demo-caption">交互示意 · 试着勾选你喜欢的图片</p>
+        </div>
+      </div>
+      <a class="scroll-cue" href="#about"><span aria-hidden="true">↓</span> 向下探索，让工作更简单</a>
+    </section>
+
+    <!-- 产品介绍：用三张卡片说明问题与解决方式 -->
+    <section class="section about-section" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <div class="section-heading" data-reveal><span class="eyebrow">LESS REPETITION. MORE INSPIRATION.</span><h2 id="about-title">收集图片，不该是一份重复劳动。</h2><p>从商品调研到素材整理，让每一次收集都有条不紊。</p></div>
+        <div class="value-grid">
+          <article class="value-card" data-reveal><span class="value-number">01 / 收集</span><h3>图片再分散，也能一网打尽</h3><p>主图、详情图散落在长长的页面里？自动扫描商品图片，省去反复寻找与右键保存。</p><span class="value-tag"><svg class="icon"><use href="#i-spark"/></svg>从逐张保存，到一键收集</span></article>
+          <article class="value-card" data-reveal><span class="value-number">02 / 整理</span><h3>在一个地方，看清所有好图</h3><p>不用在多个标签页间来回切换。集中预览与自由勾选，把真正需要的素材留下来。</p><span class="value-tag"><svg class="icon"><use href="#i-grid"/></svg>从来回切换，到集中预览</span></article>
+          <article class="value-card" data-reveal><span class="value-number">03 / 保存</span><h3>统一格式，下一步直接开工</h3><p>不再为混杂的图片格式费心。自动转换为 PNG 并编号，下载后即可进入你的创作流程。</p><span class="value-tag"><svg class="icon"><use href="#i-file"/></svg>从格式混杂，到整齐有序</span></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 核心功能：六项能力，桌面三列、平板两列、手机一列 -->
+    <section class="section features-section" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section-heading split-heading" data-reveal><div><span class="eyebrow">SMALL TOOL. BIG DIFFERENCE.</span><h2 id="features-title">每一步，都为省心而设计。</h2></div><p>从发现第一张图片，到保存最后一份灵感。<br>你需要的，刚刚好都在这里。</p></div>
+        <div class="feature-grid">
+          <article class="feature-card" data-reveal><span class="feature-icon"><svg class="icon"><use href="#i-spark"/></svg></span><span class="feature-index">01</span><h3>一键提取</h3><p>自动扫描页面所有商品图，兼容常见懒加载方式。打开详情页，轻点一下即可收集。</p><span class="feature-foot">少一点操作，多一点效率</span></article>
+          <article class="feature-card" data-reveal><span class="feature-icon peach-icon"><svg class="icon"><use href="#i-filter"/></svg></span><span class="feature-index">02</span><h3>智能过滤</h3><p>自动排除图标、Logo 和占位图，减少无关内容干扰，让商品图片成为主角。</p><span class="feature-foot">好图留下，杂项退场</span></article>
+          <article class="feature-card" data-reveal><span class="feature-icon green-icon"><svg class="icon"><use href="#i-grid"/></svg></span><span class="feature-index">03</span><h3>集中预览</h3><p>在独立页面中，以清晰的网格展示所有图片。无需反复切换，一眼找到需要的素材。</p><span class="feature-foot">所有素材，一目了然</span></article>
+          <article class="feature-card" data-reveal><span class="feature-icon green-icon"><svg class="icon"><use href="#i-select"/></svg></span><span class="feature-index">04</span><h3>自由勾选</h3><p>支持全选、反选与单张勾选。无论整套素材还是几张细节图，都能按需下载。</p><span class="feature-foot">选择权，始终在你手中</span></article>
+          <article class="feature-card" data-reveal><span class="feature-icon"><svg class="icon"><use href="#i-file"/></svg></span><span class="feature-index">05</span><h3>统一 PNG</h3><p>下载时自动将图片转为 PNG 格式，减少手动转换，让后续编辑与使用更顺手。</p><span class="feature-foot">统一格式，轻松衔接</span></article>
+          <article class="feature-card" data-reveal><span class="feature-icon peach-icon"><svg class="icon"><use href="#i-download"/></svg></span><span class="feature-index">06</span><h3>批量下载</h3><p>一键保存所选图片到本地，文件名自动编号。让零散素材，变成整齐的图片集合。</p><span class="feature-foot">轻点一下，整套带走</span></article>
+        </div>
+        <p class="feature-note">小提示：懒加载图片建议先滚动页面，使商品图充分加载；实际提取与下载效果受平台页面和图片访问权限影响。</p>
+      </div>
+    </section>
+
+    <!-- 安装引导：四步加载本地 Chrome 扩展 -->
+    <section class="section install-section" id="install" aria-labelledby="install-title">
+      <div class="container">
+        <div class="section-heading" data-reveal><span class="eyebrow">READY IN A FEW STEPS.</span><h2 id="install-title">四个小步骤，开启高效工作流。</h2><p>一次安装，让之后的每次收集都更轻松。</p></div>
+        <ol class="steps">
+          <li data-reveal><span class="step-number">01</span><h3>下载并解压</h3><p>下载插件压缩包，解压到本地固定文件夹，并保留该文件夹。</p><a class="step-link" href="#download">获取插件 <span aria-hidden="true">↗</span></a></li>
+          <li data-reveal><span class="step-number">02</span><h3>打开扩展管理</h3><p>在 Chrome 地址栏输入以下地址，然后按回车键。</p><div class="code-box"><code>chrome://extensions</code><button id="copy-address" type="button" aria-label="复制 Chrome 扩展管理地址">复制</button></div></li>
+          <li data-reveal><span class="step-number">03</span><h3>开启开发者模式</h3><p>找到扩展管理页面右上角的「开发者模式」，将开关打开。</p><span class="switch-preview" aria-hidden="true">开发者模式 <span class="switch-track"></span></span></li>
+          <li data-reveal><span class="step-number">04</span><h3>加载插件文件夹</h3><p>点击「加载已解压的扩展程序」，选择刚才解压的文件夹，即可开始使用。</p><span class="load-preview" aria-hidden="true">＋ 加载已解压的扩展程序</span></li>
+        </ol>
+        <p class="install-tip"><svg class="icon"><use href="#i-chrome"/></svg>安装完成后，打开支持的商品详情页，点击「获取图片」即可使用。</p>
+      </div>
+    </section>
+
+    <!-- 下载入口：未配置安装包时提供明确说明，避免虚假下载 -->
+    <section class="download-section" id="download" aria-labelledby="download-title">
+      <div class="container cta-panel" data-reveal>
+        <span class="cta-decoration cta-decoration-one" aria-hidden="true"></span><span class="cta-decoration cta-decoration-two" aria-hidden="true"></span>
+        <div class="cta-content"><span class="eyebrow">YOUR NEXT GREAT IDEA STARTS HERE.</span><h2 id="download-title">少一点重复点击，<br>多一点创作灵感。</h2><p>让图提取，成为你电商工作流里的顺手工具。</p><button class="button button-white" type="button" data-download><svg class="icon"><use href="#i-download"/></svg>下载插件<svg class="icon"><use href="#i-arrow"/></svg></button><span class="cta-note">适用于桌面版 Chrome · 本地安装</span><noscript><p>正式安装包地址尚未配置，请稍后查看发布信息。</p></noscript></div>
+        <span class="cta-logo" aria-hidden="true"><svg><use href="#i-logo"/></svg></span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="container"><div class="footer-top"><a class="brand" href="#top"><span class="brand-mark"><svg class="icon"><use href="#i-logo"/></svg></span><span>图提取 <span class="brand-en">ImageGrab</span></span></a><p>让每一张好图，都有一个好去处。</p><a class="github-placeholder" href="#project-info">GitHub <span aria-hidden="true">↗</span></a></div><div class="footer-bottom"><span>© <span id="copyright-year">2026</span> ImageGrab 图提取</span><span>支持淘宝、京东、拼多多商家版</span><span id="project-info">GitHub 项目地址待公布</span></div></div></footer>
+
+  <!-- 原生对话框与状态区：键盘可操作，关闭后回到触发按钮 -->
+  <dialog class="download-dialog" id="download-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description"><form method="dialog"><span class="feature-icon"><svg class="icon"><use href="#i-download"/></svg></span><h2 id="dialog-title">安装包即将就绪</h2><p id="dialog-description">正式下载地址尚未公布。你可以先查看安装步骤，待安装包发布后下载使用。</p><div class="dialog-actions"><a class="button" href="#install" id="dialog-install">查看安装步骤</a><button class="text-button" type="submit">关闭</button></div></form></dialog>
+  <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+</body>
+</html>
