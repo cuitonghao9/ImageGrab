@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "电商商品图片提取器",
+  "version": "0.1.0",
+  "description": "在商品页面提取图片并选择下载为 PNG。",
+  "permissions": ["storage", "downloads"],
+  "host_permissions": [
+    "https://*.taobao.com/*",
+    "https://*.tmall.com/*",
+    "https://*.jd.com/*",
+    "https://*.pinduoduo.com/*",
+    "https://*.yangkeduo.com/*",
+    "https://*.alicdn.com/*",
+    "https://*.taobaocdn.com/*",
+    "https://*.360buyimg.com/*",
+    "https://*.pddpic.com/*"
+  ],
+  "background": { "service_worker": "assets/background.js", "type": "module" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.taobao.com/*",
+        "https://*.tmall.com/*",
+        "https://*.jd.com/*",
+        "https://*.pinduoduo.com/*",
+        "https://*.yangkeduo.com/*"
+      ],
+      "js": ["assets/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https:"
+  }
+}
