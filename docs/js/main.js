@@ -126,7 +126,6 @@
   });
 
   // 下载地址校验：仅允许本站相对资源或 HTTPS，防止误配置危险协议。
-  const dialog = document.querySelector('#download-dialog');
   document.querySelectorAll('[data-download]').forEach((button) => {
     button.addEventListener('click', (event) => {
       const url = new URL(DOWNLOAD_URL, window.location.href);
@@ -146,6 +145,5 @@
       link.remove();
     });
   });
-  document.querySelector('#dialog-install').addEventListener('click', () => dialog.close());
   document.querySelector('#copyright-year').textContent = String(new Date().getFullYear());
 })();

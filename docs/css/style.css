@@ -227,11 +227,6 @@ code { color: var(--primary-deep); font-size: 11px; font-family: Consolas, Monac
 .github-placeholder { margin-left: auto; color: var(--muted); font-size: 12px; }
 .github-placeholder:hover { color: var(--primary); }
 .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-5); border-top: 1px solid var(--line); color: var(--subtle); font-size: 10px; }
-.download-dialog { width: min(440px, calc(100% - 2.5rem)); max-height: calc(100% - 3rem); padding: var(--space-7); border: 1px solid var(--line); border-radius: var(--radius-large); color: var(--text); background: var(--white); box-shadow: var(--shadow-large); }
-.download-dialog::backdrop { background: rgb(26 20 55 / 45%); backdrop-filter: blur(4px); }
-.download-dialog h2 { font-size: 23px; margin-block: var(--space-5) var(--space-3); }
-.download-dialog p { font-size: 13px; color: var(--muted); }
-.dialog-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-6); }
 .toast { position: fixed; bottom: var(--space-6); left: 50%; transform: translateX(-50%); z-index: 50; width: max-content; max-width: calc(100% - 2.5rem); padding: var(--space-3) var(--space-5); background: var(--text); color: var(--white); border-radius: var(--radius-small); font-size: 12px; box-shadow: var(--shadow); }
 
 /* 渐入只在观察器成功创建后启用，无脚本或不支持时内容始终可见 */

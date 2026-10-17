@@ -48,11 +48,6 @@ function setup(options = {}) {
       unobserve(element) { this.observed.delete(element); }
     };
   }
-  const dialog = document.querySelector('dialog');
-  if (options.dialog !== false) {
-    dialog.showModal = () => { dialog.open = true; };
-    dialog.close = () => { dialog.open = false; };
-  }
   window.eval(options.script || script);
   return { dom, window, document, media, tops, getObserver: () => observer };
 }

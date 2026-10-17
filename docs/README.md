@@ -8,6 +8,10 @@
 
 双击本目录中的 `index.html` 即可，无需安装依赖、启动服务或构建。图库支持勾选与全选，作为界面演示，不执行真实商品页提取。
 
+## 发布给访客
+
+将整个 `docs/` 目录的内容部署到同一静态网站目录中，确保 `assets/ImageGrab.zip` 保留在相对路径。官网托管后，各地访客即可从同域地址下载 ZIP；本地预览地址只在当前电脑可访问，不是公网发布。
+
 ## 修改内容
 
 - 主色：修改 `css/style.css` 顶部 `:root` 中的 `--primary`、`--primary-deep`、`--primary-light` 和 `--primary-soft`。
