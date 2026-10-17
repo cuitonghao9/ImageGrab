@@ -12,7 +12,7 @@
 
 - 主色：修改 `css/style.css` 顶部 `:root` 中的 `--primary`、`--primary-deep`、`--primary-light` 和 `--primary-soft`。
 - 文案：直接编辑 `index.html` 中对应区块，保留导航关联的 `id`。
-- 下载：将真实安装包放入 `assets/`，再修改 `js/main.js` 的 `DOWNLOAD_URL`，例如 `assets/ImageGrab.zip`；也支持 HTTPS 下载地址。目前留空，点击后显示待发布提示。
+- 下载：`assets/ImageGrab.zip` 是从项目根目录运行 `pnpm build` 后打包的 Chrome 扩展。CTA 会触发 ZIP 下载；地址栏导航中的下载链接也带 `download` 属性。
 - GitHub：将页脚 GitHub 链接的 `href` 替换为真实项目地址，再更新「项目地址待公布」文字。
 - 本地复制：部分浏览器限制 `file://` 下的剪贴板，页面会选中地址并给出手动复制提示。
 
@@ -22,6 +22,7 @@
 
 ```bash
 node --check docs/js/main.js
+node --test docs/tests/package.test.mjs
 node --test docs/tests/site.test.mjs
 pnpm test
 pnpm lint
@@ -29,4 +30,4 @@ pnpm typecheck
 pnpm build
 ```
 
-测试覆盖内部锚点、本地资源、CSS 解析、菜单、图库选择、导航高亮、滚动动画、减少动态效果偏好、复制降级与下载地址校验。jsdom 不执行真实布局，不能替代浏览器视觉检查。
+测试覆盖内部锚点、本地资源、CSS 解析、菜单、图库选择、导航高亮、滚动动画、减少动态效果偏好、复制降级、下载地址和 ZIP 清单。jsdom 不执行真实布局，不能替代浏览器视觉检查。

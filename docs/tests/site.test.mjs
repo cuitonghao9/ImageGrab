@@ -75,6 +75,11 @@ test('语义结构、内部锚点、本地资源、SVG 引用均完整', () => {
     assert.ok(existsSync(new URL(`../${path}`, import.meta.url)), path);
   }
   assert.equal(doc.querySelectorAll('[src^="http"], link[href^="http"]').length, 0);
+  assert.equal(doc.querySelector('.nav-links .button').getAttribute('href'), 'assets/ImageGrab.zip');
+  assert.ok(doc.querySelector('.nav-links .button').hasAttribute('download'));
+  assert.equal(doc.querySelector('[data-download]').getAttribute('href'), 'assets/ImageGrab.zip');
+  assert.ok(doc.querySelector('[data-download]').hasAttribute('download'));
+  assert.equal(script.includes("const DOWNLOAD_URL = 'assets/ImageGrab.zip';"), true);
   dom.window.close();
 });
 
@@ -173,23 +178,6 @@ test('减少动态效果偏好下不创建隐藏动画', () => {
   app.dom.window.close();
 });
 
-test('未发布下载显示对话框；安装链接关闭对话框', () => {
-  const app = setup();
-  app.document.querySelector('[data-download]').click();
-  assert.equal(app.document.querySelector('dialog').open, true);
-  app.document.querySelector('#dialog-install').click();
-  assert.equal(app.document.querySelector('dialog').open, false);
-  app.dom.window.close();
-});
-
-test('不支持原生 dialog 时使用可读状态提示', () => {
-  const app = setup({ dialog: false });
-  app.document.querySelector('[data-download]').click();
-  assert.equal(app.document.querySelector('#toast').hidden, false);
-  assert.match(app.document.querySelector('#toast').textContent, /尚未公布/);
-  app.dom.window.close();
-});
-
 test('本地剪贴板不可用时选中地址并说明手动复制', async () => {
   const app = setup();
   app.document.querySelector('#copy-address').click();
@@ -218,16 +206,16 @@ test('获得剪贴板权限时可复制地址；拒绝权限后降级提示', as
 });
 
 test('危险下载协议被阻止，不创建下载链接', () => {
-  const app = setup({ script: script.replace("const DOWNLOAD_URL = '';", "const DOWNLOAD_URL = 'javascript:alert(1)';") });
+  const app = setup({ script: script.replace("const DOWNLOAD_URL = 'assets/ImageGrab.zip';", "const DOWNLOAD_URL = 'javascript:alert(1)';") });
   app.document.querySelector('[data-download]').click();
   assert.match(app.document.querySelector('#toast').textContent, /暂不可用/);
   assert.equal(app.document.querySelectorAll('a[download]').length, 0);
   app.dom.window.close();
 });
 
-test('相对 ZIP 和 HTTPS 地址触发下载后移除临时链接', () => {
-  for (const address of ['assets/ImageGrab.zip', 'https://example.com/ImageGrab.zip']) {
-    const app = setup({ script: script.replace("const DOWNLOAD_URL = '';", `const DOWNLOAD_URL = '${address}';`) });
+test('同源 ZIP 地址触发下载后移除临时链接', () => {
+  for (const address of ['assets/ImageGrab.zip']) {
+    const app = setup({ script: script.replace("const DOWNLOAD_URL = 'assets/ImageGrab.zip';", `const DOWNLOAD_URL = '${address}';`) });
     let download;
     app.window.HTMLAnchorElement.prototype.click = function () {
       download = { href: this.href, name: this.download };

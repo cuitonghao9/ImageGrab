@@ -2,8 +2,8 @@
 (() => {
   'use strict';
 
-  // 发布时填入真实 ZIP 地址（相对路径或 HTTPS）；保持空字符串时显示待发布提示。
-  const DOWNLOAD_URL = '';
+  // ZIP 与官网放在同一目录，适用于 file:// 和静态站点部署。
+  const DOWNLOAD_URL = 'assets/ImageGrab.zip';
   const root = document.documentElement;
   const header = document.querySelector('.site-header');
   const menuButton = document.querySelector('.menu-toggle');
@@ -128,19 +128,16 @@
   // 下载地址校验：仅允许本站相对资源或 HTTPS，防止误配置危险协议。
   const dialog = document.querySelector('#download-dialog');
   document.querySelectorAll('[data-download]').forEach((button) => {
-    button.addEventListener('click', () => {
-      if (!DOWNLOAD_URL) {
-        if (typeof dialog.showModal === 'function') {
-          if (!dialog.open) dialog.showModal();
-        } else notify('正式下载地址尚未公布，请稍后查看发布信息。');
-        return;
-      }
+    button.addEventListener('click', (event) => {
       const url = new URL(DOWNLOAD_URL, window.location.href);
       const relative = !/^(?:[a-z][a-z\d+.-]*:|\/\/|\\)/i.test(DOWNLOAD_URL);
-      if (url.protocol !== 'https:' && !(relative && ['http:', 'file:'].includes(url.protocol))) {
+      const sameOrigin = url.origin === window.location.origin;
+      if (!sameOrigin || (url.protocol !== 'https:' && !(relative && ['http:', 'file:'].includes(url.protocol)))) {
         notify('下载地址暂不可用，请稍后重试。');
         return;
       }
+      // 保留 href + download 作为无脚本降级，脚本增强时阻止默认行为避免重复下载。
+      event.preventDefault();
       const link = document.createElement('a');
       link.href = url.href;
       link.download = 'ImageGrab.zip';
